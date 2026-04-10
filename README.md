@@ -1,64 +1,51 @@
 ![](https://neurojson.org/wiki/upload/neurojson_banner_long.png)
 
-# JGIFTI Format Specification Development Guide
+# JGIFTI Format Specification
 
-We use this repository to gather feedback from the community regarding the 
-["JGIFTI Format Specification"](JGIFTI_specification.md), or JGIFTI format. Such 
-feedback is crucial to finalize this file specification and help improve
-it in the future once disseminated. 
+This repository hosts the [JGIFTI Format Specification](JGIFTI_specification.md) and
+serves as the primary venue for community feedback. Your feedback is essential to
+refining and improving the specification over time.
 
-The latest version of the JGIFTI specification can be found in the file named 
-[JGIFTI_specification.md](JGIFTI_specification.md). The specification is written
-in the [Markdown format](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) 
+The latest version of the specification is available in
+[JGIFTI_specification.md](JGIFTI_specification.md), written in
+[Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 for convenient editing and version control.
 
-The JGIFTI format is built upon the [JData specification](https://github.com/NeuroJSON/jdata/) - 
-a generalized framework to serialize and convert complex scientific data. 
-The JGIFTI specification is compatible with [JData specification Draft 3](https://neurojson.org/jdata/draft3).
+JGIFTI is built upon the [JData specification](https://neurojson.org/jdata/),
+a generalized framework for serializing and exchanging complex scientific data.
 
 ## How to participate
 
-You can use a number of methods to provide your feedback to the working 
-draft of this file specification, including
+There are several ways to provide feedback on the specification:
 
-- [Create an "Issue"](https://github.com/NeuroJSON/jgifti/issues)
-  - This is the most recommended method to provide detailed feedback or 
-    discussion. An "Issue" in github is highly versatile. One can ask a 
-    question, report a bug, provide a feature request, or simply propose
-    general discussions. Please use URLs or keywords to link your discussion 
-    to a specific line/section/topic in the document.
-- Comment or contribute to the specification
-  - A milestone version of the specification will be associated with an
-    RFC (Request for comments) commit (where the entire file is removed
-    and re-added so that every line appears in such comment). One can
-    write short comments as well as post replies on this RFC page. 
-  - To add a comment, you need to first register a github account, and then 
-    browse the above RFC page. When hovering your cursor over each line, a 
-    "plus" icon is displayed, clicking it will allow one to comment on a 
-    specific line (or reply to other's comments).
-  - The RFC page can get busy if too many comments appear. Please consider 
-    using the [Issues section](https://github.com/NeuroJSON/jgifti/issues) if this happens.
-  - One can browse the commit history of the specification document. If
-    anyone is interested in commenting on a particular updated, you can also
-    comment on any of the commit page using the same method.
-- [Use NeuroJSON Forum](https://github.com/orgs/NeuroJSON/discussions)
-  - You may send your comments to the neurojson Github forum. You may report
-    bugs, new features, or submit new datasets.
+- [Open an Issue](https://github.com/NeuroJSON/jgifti/issues) *(recommended)*
+  - Issues are the preferred channel for detailed feedback and discussion. Use them
+    to ask questions, report errors, request features, or start general discussions.
+    Include URLs or section references to link your feedback to specific content.
+- Comment on an RFC commit
+  - Each milestone version of the specification is published as an RFC
+    (Request for Comments) commit, in which the entire file is removed and re-added
+    so that every line is open for inline comments. To comment, register a GitHub
+    account and open the RFC commit page. Hovering over any line reveals a "+" icon;
+    clicking it lets you add a comment or reply to an existing one.
+  - If the RFC page becomes crowded, use the
+    [Issues section](https://github.com/NeuroJSON/jgifti/issues) instead.
+  - You can also comment on any individual commit in the repository history using
+    the same method.
+- [Post to the NeuroJSON Forum](https://github.com/orgs/NeuroJSON/discussions)
+  - Use the NeuroJSON GitHub Discussions forum to report bugs, propose features,
+    or share datasets.
 
-For anyone who wants to contribute to the writing or revision of this document,
-please follow the below steps
+To contribute edits or additions to the document directly:
 
-- Fork this repository and make updates, then create a pull-request
-  - Please first register an account on github, then, browse the 
-    [JGIFTI repository](https://github.com/NeuroJSON/jgifti);
-    on the top-right of this page, find and click the "Fork" button.
-  - once you fork the JGIFTI project to your own repository, you may edit the
-    files in your browser directly, or download to your local folder, and 
-    edit the files using a text editor;
-  - once your revision is complete, please "commit" and "push" it to your forked
-    git repository. Then you should create a pull-request against the upstream
-    repository (i.e., `NeuroJSON/jgifti`). Please select "Compare cross forks" and 
-    select `"NeuroJSON/jgifti"` as "base fork". Please write a descriptive title for
-    your pull-request. The project maintainer will review your updates
-    and choose to merge to the upstream files or request revision from you.
+- Fork this repository, make your changes, then open a pull request.
+  - Register a GitHub account and visit the
+    [JGIFTI repository](https://github.com/NeuroJSON/jgifti). Click the "Fork"
+    button at the top right.
+  - Edit files in your browser or clone the fork locally and use any text editor.
+  - Once your changes are ready, commit and push them to your fork, then open a
+    pull request against `NeuroJSON/jgifti`. Select "Compare across forks" and set
+    `NeuroJSON/jgifti` as the base fork. Write a descriptive title for your pull
+    request. The project maintainer will review your changes and either merge them
+    or request revisions.
 
