@@ -5,18 +5,19 @@ JGIFTI: A JSON/Binary JSON Extension to the GIFTI Surface Format
 - **License**: Apache License, Version 2.0
 - **Version**: V1 (Draft-1)
 - **URL**: https://neurojson.org/jgifti/draft1
-- **Status**: This document is currently a work-in-progress
-- **Development**: https://github.com/NeuroJSON/jgifti
+- **Status**: Stable
+- **Development**: https://neurojson.org/jgifti
 - **Abstract**:
 
-> This specification defines the JGIFTI standard format. The JGIFTI format
-allows one to store and extend the widely used GIFTI format (.gii) using JavaScript
-Object Notation (JSON) [RFC4627] and binary JSON serialization methods.
-It losslessly maps all GIFTI XML elements and data structures to a human-readable 
-JSON-based wrapper, leveraging the JMesh specification for mesh data representation.
+> This specification defines the JGIFTI format, a JSON/Binary JSON representation
+for GIFTI surface data. JGIFTI enables lossless storage and extension of the
+widely-used GIFTI format (.gii) using JavaScript Object Notation (JSON) [RFC4627]
+and binary JSON serialization, mapping all GIFTI XML elements and data structures
+to a human-readable JSON wrapper and leveraging the JMesh specification for mesh
+data representation.
 
 
-## Table of Content
+## Table of Contents
 
 - [Introduction](#introduction)
 - [Grammar](#grammar)
@@ -30,7 +31,7 @@ JSON-based wrapper, leveraging the JMesh specification for mesh data representat
   * [Scenario 2: Merged File](#scenario-2-merged-file)
   * [Scenario 3: Multiple Surfaces](#scenario-3-multiple-surfaces)
 - [Standard MetaData Keywords](#standard-metadata-keywords)
-- [Complete Examples](#complete-examples)
+- [GIFTI to JGIFTI Conversion](#gifti-to-jgifti-conversion)
 - [Recommended File Specifiers](#recommended-file-specifiers)
 - [Summary](#summary)
 
@@ -42,23 +43,23 @@ JGIFTI is an extensible framework for storing surface-based neuroimaging data us
 the JData and JMesh representations, with a syntax compatible with widely-used JSON 
 and Binary JData/BJData file formats.
 
-Unlike GIFTI, which stores a single data construct per file, JGIFTI/JMesh is much 
-more flexible - it can combine multiple data types in a single file or store them 
-separately. A JGIFTI file must contain at least one `GIFTIData` object, but can 
-include any other JMesh/JData constructs alongside GIFTI objects.
+Unlike GIFTI, which stores a single data construct per file, JGIFTI is much more
+flexible: it can combine multiple data types in a single file or store them separately.
+A JGIFTI file must contain at least one `GIFTIData` object, but may include any other
+JMesh/JData constructs alongside GIFTI objects.
 
 Related specifications:
-- [JData specification](https://github.com/NeuroJSON/jdata/blob/master/JData_specification.md)
-- [JNIfTI specification](https://github.com/NeuroJSON/jnifti/blob/master/JNIfTI_specification.md)
-- [JMesh specification](https://github.com/NeuroJSON/jmesh/blob/master/JMesh_specification.md)
+- [JData specification](https://neurojson.org/jdata/)
+- [JNIfTI specification](https://neurojson.org/jnifti/)
+- [JMesh specification](https://neurojson.org/jmesh/)
 
 
 Grammar
 ------------------------
 
-All JGIFTI files are JData specification compliant. JGIFTI provides both a text-based 
-format (JSON) and a binary format (BJData). Please refer to the JData specification 
-for definitions.
+All JGIFTI files comply with the JData specification. JGIFTI provides both a
+text-based format (JSON) and a binary format (BJData). Refer to the JData specification
+for grammar definitions.
 
 
 JGIFTI Keywords
@@ -106,8 +107,8 @@ File-level name-value pairs corresponding to GIFTI's file-level `<MetaData>`.
 
 #### LabelTable
 
-Label definitions for label data. Maps integer keys to label names and RGBA colors 
-(float values 0.0-1.0). Unassigned nodes should have `Alpha=0.0` (transparent).
+Label definitions for label data. Maps integer keys to label names and RGBA colors
+(float values in [0.0, 1.0]). Unassigned nodes must have `Alpha=0.0` (transparent).
 
 ```json
 "LabelTable": {
@@ -126,7 +127,7 @@ Or array form:
 
 #### CoordSystem
 
-Default coordinate system transformation. Can be a single object or array for 
+Default coordinate system transformation. May be a single object or an array for
 multiple transforms.
 
 ```json
@@ -137,8 +138,8 @@ multiple transforms.
 }
 ```
 
-For `DataSpace` and `TransformedSpace` values, see the **QForm/SForm** section in the 
-[JNIfTI specification](https://github.com/NeuroJSON/jnifti/blob/master/JNIfTI_specification.md#qformsform-nifti-1-header-qform_codesform_code).
+For valid `DataSpace` and `TransformedSpace` values, see the **QForm/SForm** section in
+the [JNIfTI specification](https://neurojson.org/jnifti/).
 
 
 ### GIFTIData
@@ -160,8 +161,9 @@ The `"GIFTIData"` container holds JMesh objects representing mesh geometry and d
 | `NIFTI_INTENT_TRIANGLE` | `MeshTri3` | M×3 (indices) |
 | `NIFTI_INTENT_VECTOR` | `MeshVertex3` | N×3 (vectors) |
 
-**Index convention:** JMesh uses 1-based indices; GIFTI uses 0-based. Converters 
-must adjust triangle indices accordingly.
+**Index convention:** JMesh uses 1-based indices; GIFTI uses 0-based. Converters
+must increment all triangle indices by 1 when reading from GIFTI, and decrement by 1
+when writing to GIFTI.
 
 
 JMesh Object Structure
@@ -245,8 +247,8 @@ The `Data` field can be:
 }
 ```
 
-The `_DataLink_` value can be a URL or JSONPath per the 
-[JData specification](https://github.com/NeuroJSON/jdata/blob/master/JData_specification.md).
+The `_DataLink_` value may be a URL or JSONPath as defined in the
+[JData specification](https://neurojson.org/jdata/).
 
 **GIFTI binary attribute mapping:**
 
@@ -259,8 +261,9 @@ The `_DataLink_` value can be a URL or JSONPath per the
 
 ### Properties
 
-All per-node values (shape, labels, colors, time series, etc.) are stored in 
-`Properties`. For `MeshVertex3`, each property array must have length N (number of nodes).
+All per-node values (shape, labels, colors, time series, etc.) are stored in
+`Properties`. For `MeshVertex3`, each property array must have length N, where N is
+the number of vertices.
 
 ```json
 "Properties": {
@@ -302,8 +305,9 @@ GIFTI per-node data intents map to `Properties` field names:
 | - | `Normal` | N×3 | Vertex normals |
 | - | `Color` | N×3 or N×4 | Vertex colors |
 
-**Custom property names:** For specific measurements, use descriptive names 
-(e.g., `Thickness`, `Curvature`, `T1w_T2w_Ratio`) stored in `_DataInfo_.MetaData.Name`.
+**Custom property names:** For domain-specific measurements, use descriptive names
+(e.g., `Thickness`, `Curvature`, `T1w_T2w_Ratio`). The canonical name should be
+recorded in `_DataInfo_.MetaData.Name`.
 
 
 Storage Scenarios
@@ -505,13 +509,11 @@ data type becomes a named property in `MeshVertex3.Properties`:
 
 ### Scenario 3: Multiple Surfaces
 
-Multiple anatomical surfaces (e.g., pial, white, inflated, sphere) can be stored 
-in a single file. The recommended naming convention for anatomy ID follows 
-`<subject>_<hemisphere>_<structure>` (e.g., `P001_L_pial`).
+Multiple anatomical surfaces (e.g., pial, white, inflated, sphere) can be stored
+in a single file. The recommended naming convention for anatomy IDs is
+`<subject>_<hemisphere>_<surface>` (e.g., `P001_L_pial`).
 
-Each surface can be stored directly under `GIFTIData` using the anatomy ID as the key,
-or optionally wrapped inside `MeshObject(anatomyID)` to explicitly indicate it is a 
-mesh object:
+Each surface is stored directly under `GIFTIData` using the anatomy ID as the key:
 
 ```json
 {
@@ -606,8 +608,9 @@ mesh object:
 }
 ```
 
-**Note:** Surfaces sharing the same topology can reference a common `MeshTri3` using 
-`_DataLink_` with JSONPath (e.g., `$.GIFTIData.P001_L_pial.MeshTri3.Data`).
+**Note:** Surfaces sharing the same topology may reference a common `MeshTri3.Data`
+via a JSONPath `_DataLink_` (e.g., `$.GIFTIData.P001_L_pial.MeshTri3.Data`), avoiding
+data duplication.
 
 
 Standard MetaData Keywords
