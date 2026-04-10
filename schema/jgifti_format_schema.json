@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neurojson.org/jgifti/draft1/schema",
+  "title": "JGIFTI",
+  "description": "JSON Schema for the JGIFTI format: a JSON/Binary JSON extension to the GIFTI surface format (Draft-1). See https://neurojson.org/jgifti/draft1",
+  "type": "object",
+  "properties": {
+    "GIFTIHeader": { "$ref": "#/$defs/GIFTIHeader" },
+    "GIFTIData":   { "$ref": "#/$defs/GIFTIData" }
+  },
+  "required": ["GIFTIData"],
+  "additionalProperties": true,
+
+  "$defs": {
+
+    "RGBAColor": {
+      "description": "RGBA color as four floats in [0.0, 1.0]: [R, G, B, A]",
+      "type": "array",
+      "items": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+      "minItems": 4,
+      "maxItems": 4
+    },
+
+    "Matrix4x4": {
+      "description": "4×4 affine transformation matrix stored as an array of four row arrays",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": { "type": "number" },
+        "minItems": 4,
+        "maxItems": 4
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+
+    "CoordSystem": {
+      "description": "Coordinate system transformation between two named spaces",
+      "type": "object",
+      "properties": {
+        "DataSpace":        { "type": "string", "description": "Name of the source coordinate space" },
+        "TransformedSpace": { "type": "string", "description": "Name of the target coordinate space" },
+        "MatrixData":       { "$ref": "#/$defs/Matrix4x4" }
+      },
+      "required": ["DataSpace", "TransformedSpace", "MatrixData"],
+      "additionalProperties": false
+    },
+
+    "CoordSystemOrArray": {
+      "description": "A single coordinate system or an array of coordinate systems",
+      "oneOf": [
+        { "$ref": "#/$defs/CoordSystem" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CoordSystem" },
+          "minItems": 1
+        }
+      ]
+    },
+
+    "LabelEntry": {
+      "description": "A single label definition with an optional RGBA color",
+      "type": "object",
+      "properties": {
+        "Label": { "type": "string", "description": "Human-readable label name" },
+        "RGBA":  { "$ref": "#/$defs/RGBAColor" }
+      },
+      "required": ["Label"],
+      "additionalProperties": false
+    },
+
+    "LabelEntryWithKey": {
+      "description": "A label definition including an explicit integer key (array form of LabelTable)",
+      "type": "object",
+      "properties": {
+        "Key":   { "type": "integer", "minimum": 0, "description": "Integer label index" },
+        "Label": { "type": "string",  "description": "Human-readable label name" },
+        "RGBA":  { "$ref": "#/$defs/RGBAColor" }
+      },
+      "required": ["Key", "Label"],
+      "additionalProperties": false
+    },
+
+    "LabelTable": {
+      "description": "Mapping of integer label indices to names and colors. May be an object (string keys) or an array (with explicit Key fields).",
+      "oneOf": [
+        {
+          "description": "Object form: string-encoded integer keys map to label entries",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/LabelEntry" }
+        },
+        {
+          "description": "Array form: each element carries an explicit Key field",
+          "type": "array",
+          "items": { "$ref": "#/$defs/LabelEntryWithKey" }
+        }
+      ]
+    },
+
+    "FileMetaData": {
+      "description": "File-level metadata key-value pairs stored in GIFTIHeader",
+      "type": "object",
+      "properties": {
+        "Date":          { "type": "string", "description": "Date and time the file was written" },
+        "UserName":      { "type": "string", "description": "Name of the user who wrote the file" },
+        "Description":   { "type": "string", "description": "Free-text description of the file" },
+        "SubjectID":     { "type": "string", "description": "Subject identifier" },
+        "TimeStep":      { "type": "string", "description": "Repetition time (TR) for time-series data" },
+        "LengthUnit":    { "type": "string", "description": "Spatial unit (default: mm)", "default": "mm" },
+        "TimeUnit":      { "type": "string", "description": "Time unit (default: s)",     "default": "s"  },
+        "FrequencyUnit": { "type": "string", "description": "Frequency unit (default: Hz)", "default": "Hz" }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+
+    "GIFTIHeader": {
+      "description": "File-level header containing version, metadata, label table, and default coordinate system",
+      "type": "object",
+      "properties": {
+        "Version":     { "type": "string", "description": "GIFTI format version string (e.g. \"1.0\")" },
+        "MetaData":    { "$ref": "#/$defs/FileMetaData" },
+        "LabelTable":  { "$ref": "#/$defs/LabelTable" },
+        "CoordSystem": { "$ref": "#/$defs/CoordSystemOrArray" }
+      },
+      "additionalProperties": false
+    },
+
+    "AnnotatedArray": {
+      "description": "JData annotated array carrying type, size, and optional compression metadata",
+      "type": "object",
+      "properties": {
+        "_ArrayType_": {
+          "type": "string",
+          "description": "Element data type",
+          "enum": ["uint8", "int8", "uint16", "int16", "uint32", "int32", "uint64", "int64", "float32", "float64"]
+        },
+        "_ArraySize_": {
+          "type": "array",
+          "description": "Array dimensions, e.g. [N, 3] for vertex coordinates",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 1
+        },
+        "_ArrayOrder_": {
+          "type": "string",
+          "description": "Array indexing order: \"c\" (row-major) or \"f\" (column-major)",
+          "enum": ["c", "f"]
+        },
+        "_ArrayZipType_": {
+          "type": "string",
+          "description": "Compression algorithm applied to the data",
+          "enum": ["zlib", "gzip", "lzma", "lz4", "blosc2"]
+        },
+        "_ArrayZipSize_": {
+          "type": "array",
+          "description": "Uncompressed array dimensions (required when _ArrayZipType_ is set)",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 1
+        },
+        "_ArrayZipEndian_": {
+          "type": "string",
+          "description": "Byte order of the compressed data",
+          "enum": ["little", "big"]
+        },
+        "_ArrayZipData_": {
+          "type": "string",
+          "description": "Base64-encoded compressed array data"
+        }
+      },
+      "required": ["_ArrayType_", "_ArraySize_"],
+      "additionalProperties": false
+    },
+
+    "DataLink": {
+      "description": "Reference to data stored in an external file or at a JSONPath within the same document",
+      "type": "object",
+      "properties": {
+        "_DataLink_": {
+          "type": "string",
+          "description": "A URL (e.g. file://./subj01.coord.jgii) or a JSONPath (e.g. $.GIFTIData.P001_L_pial.MeshTri3.Data)"
+        }
+      },
+      "required": ["_DataLink_"],
+      "additionalProperties": false
+    },
+
+    "DataField": {
+      "description": "Mesh data: a direct JSON array, a JData annotated array, or a DataLink reference",
+      "oneOf": [
+        {
+          "type": "array",
+          "description": "Direct JSON array of values or sub-arrays"
+        },
+        { "$ref": "#/$defs/AnnotatedArray" },
+        { "$ref": "#/$defs/DataLink" }
+      ]
+    },
+
+    "PropertyArray": {
+      "description": "Per-node property data: a direct JSON array or a JData annotated array",
+      "oneOf": [
+        { "type": "array",  "description": "Direct JSON array" },
+        { "$ref": "#/$defs/AnnotatedArray" }
+      ]
+    },
+
+    "DataInfoMetaData": {
+      "description": "Per-DataArray metadata key-value pairs stored inside _DataInfo_",
+      "type": "object",
+      "properties": {
+        "AnatomicalStructurePrimary": {
+          "type": "string",
+          "description": "Primary anatomical structure label",
+          "enum": ["CortexLeft", "CortexRight", "CortexRightAndLeft", "Cerebellum", "Head",
+                   "HippocampusLeft", "HippocampusRight"]
+        },
+        "AnatomicalStructureSecondary": {
+          "type": "string",
+          "description": "Secondary anatomical structure label",
+          "enum": ["GrayWhite", "Pial", "MidThickness"]
+        },
+        "GeometricType": {
+          "type": "string",
+          "description": "Geometric representation type of the surface",
+          "enum": ["Reconstruction", "Anatomical", "Inflated", "VeryInflated",
+                   "Spherical", "SemiSpherical", "Ellipsoid", "Flat", "Hull"]
+        },
+        "TopologicalType": {
+          "type": "string",
+          "description": "Topological type of the mesh (for MeshTri3)",
+          "enum": ["Closed", "Open", "Cut"]
+        },
+        "UniqueID":  { "type": "string", "description": "UUID string uniquely identifying this DataArray" },
+        "SurfaceID": { "type": "string", "description": "Surface identifier" },
+        "Name":      { "type": "string", "description": "Short name for display or identification of property data" },
+        "intent_p1": { "type": "string", "description": "First statistical parameter (e.g. degrees of freedom)" },
+        "intent_p2": { "type": "string", "description": "Second statistical parameter" },
+        "intent_p3": { "type": "string", "description": "Third statistical parameter" }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+
+    "DataInfo": {
+      "description": "Per-DataArray metadata container analogous to GIFTI's DataArray-level MetaData and CoordinateSystemTransformMatrix",
+      "type": "object",
+      "properties": {
+        "MetaData":    { "$ref": "#/$defs/DataInfoMetaData" },
+        "CoordSystem": { "$ref": "#/$defs/CoordSystemOrArray" }
+      },
+      "additionalProperties": false
+    },
+
+    "Properties": {
+      "description": "Per-node data arrays stored on a MeshVertex3 object. Each array must have length N (number of vertices). Custom property names are permitted.",
+      "type": "object",
+      "properties": {
+        "Thickness":             { "$ref": "#/$defs/PropertyArray", "description": "Cortical thickness (N×1)" },
+        "Curvature":             { "$ref": "#/$defs/PropertyArray", "description": "Surface curvature (N×1)" },
+        "SulcalDepth":           { "$ref": "#/$defs/PropertyArray", "description": "Sulcal depth (N×1)" },
+        "Shape":                 { "$ref": "#/$defs/PropertyArray", "description": "Generic shape measurement (N×1)" },
+        "Label":                 { "$ref": "#/$defs/PropertyArray", "description": "Integer label indices into GIFTIHeader.LabelTable (N×1)" },
+        "TimeSeries":            { "$ref": "#/$defs/PropertyArray", "description": "BOLD or other time series (N×T)" },
+        "Functional":            { "$ref": "#/$defs/PropertyArray", "description": "Statistical or functional map (N×1)" },
+        "Vector":                { "$ref": "#/$defs/PropertyArray", "description": "3D vectors per vertex (N×3)" },
+        "Tensor":                { "$ref": "#/$defs/PropertyArray", "description": "Tensor data per vertex (N×M)" },
+        "NodeIndex":             { "$ref": "#/$defs/PropertyArray", "description": "Sparse node indices for partial-coverage data (K×1)" },
+        "Normal":                { "$ref": "#/$defs/PropertyArray", "description": "Vertex normal vectors (N×3)" },
+        "Color":                 { "$ref": "#/$defs/PropertyArray", "description": "Per-vertex RGB (N×3) or RGBA (N×4) colors" },
+        "HbO":                   { "$ref": "#/$defs/PropertyArray", "description": "fNIRS oxy-hemoglobin concentration in µM (N×1 or N×T)" },
+        "HbR":                   { "$ref": "#/$defs/PropertyArray", "description": "fNIRS deoxy-hemoglobin concentration in µM (N×1 or N×T)" },
+        "HbT":                   { "$ref": "#/$defs/PropertyArray", "description": "fNIRS total hemoglobin concentration in µM (N×1 or N×T)" },
+        "AbsorptionCoefficient": { "$ref": "#/$defs/PropertyArray", "description": "fNIRS absorption coefficient in 1/mm (N×1 or N×T)" }
+      },
+      "additionalProperties": { "$ref": "#/$defs/PropertyArray" }
+    },
+
+    "MeshVertex3": {
+      "description": "JMesh vertex object: N×3 vertex coordinates and associated per-node properties",
+      "type": "object",
+      "properties": {
+        "_DataInfo_": { "$ref": "#/$defs/DataInfo" },
+        "Data":       { "$ref": "#/$defs/DataField",  "description": "N×3 array of vertex coordinates (float)" },
+        "Properties": { "$ref": "#/$defs/Properties" }
+      },
+      "required": ["Data"],
+      "additionalProperties": false
+    },
+
+    "MeshTri3": {
+      "description": "JMesh triangle index object: M×3 array of 1-based vertex indices defining triangular faces",
+      "type": "object",
+      "properties": {
+        "_DataInfo_": { "$ref": "#/$defs/DataInfo" },
+        "Data":       { "$ref": "#/$defs/DataField", "description": "M×3 array of 1-based triangle vertex indices (integer)" }
+      },
+      "required": ["Data"],
+      "additionalProperties": false
+    },
+
+    "SurfaceObject": {
+      "description": "A named anatomical surface (Scenario 3) containing a MeshVertex3 and/or MeshTri3. The key is an anatomy ID such as P001_L_pial following the <subject>_<hemisphere>_<surface> convention.",
+      "type": "object",
+      "properties": {
+        "MeshVertex3": { "$ref": "#/$defs/MeshVertex3" },
+        "MeshTri3":    { "$ref": "#/$defs/MeshTri3" }
+      },
+      "additionalProperties": false
+    },
+
+    "GIFTIData": {
+      "description": "Top-level mesh data container. In Scenarios 1 and 2, MeshVertex3 and/or MeshTri3 appear directly as properties. In Scenario 3, each property key is an anatomy ID (e.g. P001_L_pial) whose value is a SurfaceObject.",
+      "type": "object",
+      "properties": {
+        "MeshVertex3": { "$ref": "#/$defs/MeshVertex3" },
+        "MeshTri3":    { "$ref": "#/$defs/MeshTri3" }
+      },
+      "additionalProperties": { "$ref": "#/$defs/SurfaceObject" }
+    }
+
+  }
+}
